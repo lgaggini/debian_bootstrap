@@ -1,0 +1,39 @@
+---
+- hosts: all
+  tasks:
+    - name: Update packages list
+      apt: update_cache=yes
+
+    - name: Put on hold Puppet Agent version
+      dpkg_selections: name=puppet selection=hold
+
+    - name: Dist upgrade packages
+      apt: upgrade=dist
+
+    - name: Check if a reboot is required
+      register: file
+      stat: path=/var/run/reboot-required get_md5=no
+
+    - name: Reboot the server
+      command: /sbin/reboot
+      when: file.stat.exists == true
+      register: rebooted
+
+    - name: Waiting for server to come back after reboot
+      local_action: wait_for host={{ inventory_hostname }} port=22 state=started delay=10
+      when: rebooted|changed
+
+    - name: Puppet agent certificate client request
+      shell: 'puppet agent -t --noop'
+      ignore_errors: yes
+
+    - name: Waiting for certificate request sign on puppetmaster
+      pause: prompt='Waiting for certificate request sign on puppetmaster, press return to continue. Press Ctrl+c and then a to abort'
+
+    - name: First full run of Puppet agent
+      shell: 'puppet agent -t'
+      ignore_errors: yes
+
+    - name: First full run of Puppet agent
+      shell: 'puppet agent -t'
+      ignore_errors: yes
