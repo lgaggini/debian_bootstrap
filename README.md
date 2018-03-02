@@ -14,5 +14,5 @@ It performs multiple steps:
 
 ## Usage
 ```
-ansible-playbook -i newhost debian_bootstrap.yml
+ansible-playbook -i newhost, debian_bootstrap.yml
 ```
