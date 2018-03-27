@@ -41,4 +41,3 @@
 
     - name: First full run of Puppet agent
       shell: 'puppet agent -t'
-      ignore_errors: yes
