@@ -35,6 +35,9 @@
     - name: Waiting for certificate request sign on puppetmaster
       pause: prompt='Waiting for certificate request sign on puppetmaster, press return to continue. Press Ctrl+c and then a to abort'
 
+    - name: Enable puppet service
+      systemd: name=puppet enabled=yes masked=no
+
     - name: First full run of Puppet agent
       shell: 'puppet agent -t'
       ignore_errors: yes
