@@ -9,6 +9,7 @@ It performs multiple steps:
 * `apt-get dist-upgrade`
 * `reboot`
 * first puppet run for certificate request (after the certificate request it will wait for user input to confirm cert sign on puppetmaster)
+* enable puppet at startup
 * second puppet run for first config
 * third puppet run to ultimate first config
 
