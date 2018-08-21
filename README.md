@@ -5,7 +5,7 @@ debian_bootstrap is a simple ansible playbook to bootstrap a debian host created
 It performs multiple steps:
 
 * `apt-get update`
-* `put on hold puppet package`
+* `put on hold puppet packages`
 * `apt-get dist-upgrade`
 * `reboot`
 * first puppet run for certificate request (after the certificate request it will wait for user input to confirm cert sign on puppetmaster)

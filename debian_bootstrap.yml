@@ -5,7 +5,11 @@
       apt: update_cache=yes
 
     - name: Put on hold Puppet Agent version
-      dpkg_selections: name=puppet selection=hold
+      dpkg_selections: name="{{item}}" selection=hold
+      with_items:
+          - puppet
+          - hiera
+          - facter
 
     - name: Dist upgrade packages
       apt: upgrade=dist
