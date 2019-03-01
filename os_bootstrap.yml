@@ -1,0 +1,85 @@
+---
+- hosts: all
+  tasks:
+    - name: Update packages list | Debian
+      apt: update_cache=yes
+      when: ansible_distribution == 'Debian'
+
+    - name: Update packages list | CentOS
+      yum: update_cache=yes
+      when: ansible_distribution == 'CentOS'
+
+
+    - name: Put on hold Puppet Agent version | Debian
+      dpkg_selections: name="{{item}}" selection=hold
+      with_items:
+          - puppet
+          - hiera
+          - facter
+      when: ansible_distribution == 'Debian'
+
+
+    - name: Dist upgrade packages | Debian
+      apt: upgrade=dist
+      when: ansible_distribution == 'Debian'
+
+    - name: Dist upgrade packages | Centos
+      yum: name=* state=latest
+      when: ansible_distribution == 'CentOS'
+
+
+    - name: Check if a reboot is required | Debian
+      register: file
+      stat: path=/var/run/reboot-required get_md5=no
+      when: ansible_distribution == 'Debian'
+
+    - name: Reboot the server | Debian
+      shell: 'sleep 5 && /sbin/reboot'
+      register: rebooted
+      async: 1
+      poll: 0
+      when: ansible_distribution == 'Debian' and file.stat.exists == true
+
+
+    - name: Check if a reboot is required | Centos
+      register: needs_restarting
+      shell: needs-restarting -r
+      when: ansible_distribution == 'CentOS'
+      ignore_errors: true
+
+    - name: Reboot the server | Centos
+      shell: 'sleep 5 && /sbin/reboot'
+      register: rebooted
+      async: 1
+      poll: 0
+      when: ansible_distribution == 'CentOS' and needs_restarting.rc == 1
+
+
+    - name: Waiting for server to come back after reboot
+      wait_for_connection:
+        delay: 20
+        sleep: 5
+        timeout: 300
+      when: rebooted is changed
+
+    - name: Puppet agent certificate client request
+      shell: 'puppet agent -t --noop'
+      ignore_errors: yes
+
+    - name: Waiting for certificate request sign on puppetmaster
+      pause: prompt='Waiting for certificate request sign on puppetmaster, press return to continue. Press Ctrl+c and then a to abort'
+
+    - name: Enable puppet service
+      systemd: name=puppet state=started enabled=yes masked=no
+
+    - name: First full run of Puppet agent
+      shell: 'puppet agent -t'
+      ignore_errors: yes
+
+    - name: Second full run of Puppet agent
+      shell: 'puppet agent -t'
+      ignore_errors: yes
+
+    - name: Third full run of Puppet agent for full sync
+      shell: 'puppet agent -t'
+      ignore_errors: yes
