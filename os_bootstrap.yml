@@ -35,7 +35,7 @@
 
     - name: Reboot the server | Debian
       shell: 'sleep 5 && /sbin/reboot'
-      register: rebooted
+      register: debian_rebooted
       async: 1
       poll: 0
       when: ansible_distribution == 'Debian' and file.stat.exists == true
@@ -49,7 +49,7 @@
 
     - name: Reboot the server | Centos
       shell: 'sleep 5 && /sbin/reboot'
-      register: rebooted
+      register: centos_rebooted
       async: 1
       poll: 0
       when: ansible_distribution == 'CentOS' and needs_restarting.rc == 1
@@ -60,7 +60,7 @@
         delay: 20
         sleep: 5
         timeout: 300
-      when: rebooted is changed
+      when: debian_rebooted is changed or centos_rebooted is changed
 
     - name: Puppet agent certificate client request
       shell: 'puppet agent -t --noop'
