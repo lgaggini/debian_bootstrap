@@ -1,3 +1,4 @@
+# vim: ft=yaml.ansible
 ---
 - hosts: all
   tasks:
@@ -11,7 +12,7 @@
 
 
     - name: Put on hold Puppet Agent version | Debian
-      dpkg_selections: name="{{item}}" selection=hold
+      dpkg_selections: name="{{ item }}" selection=hold
       with_items:
           - puppet
           - hiera
@@ -38,7 +39,7 @@
       register: debian_rebooted
       async: 1
       poll: 0
-      when: ansible_distribution == 'Debian' and file.stat.exists == true
+      when: ansible_distribution == 'Debian' and file.stat.exists
 
 
     - name: Check if a reboot is required | Centos
